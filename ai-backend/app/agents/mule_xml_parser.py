@@ -15,6 +15,11 @@ class MuleXMLParser:
     - Flow references
     - Error handlers
     - Global configurations
+
+    Security:
+    - Masks sensitive XML attributes.
+    - Does not modify project files.
+    - Does not execute Mule applications.
     """
 
     SENSITIVE_ATTRIBUTES = (
@@ -54,7 +59,7 @@ class MuleXMLParser:
 
     @staticmethod
     def local_name(tag):
-        """Remove XML namespace from an element name."""
+        """Remove XML namespace from an element or attribute name."""
 
         if "}" in tag:
             return tag.split("}", 1)[1]
@@ -75,6 +80,21 @@ class MuleXMLParser:
     # =====================================================
 
     def safe_attributes(self, element):
+        """
+        Extract XML attributes safely.
+
+        Important:
+        MuleSoft XML may contain both:
+
+            name="SFTP_SAPI_Config"
+            doc:name="HTTP Request: SFTP_SAPI_Config"
+
+        Both have the local attribute name 'name'.
+
+        ElementTree represents doc:name using its namespace.
+        The actual unqualified name must not be overwritten
+        by the namespace-qualified documentation attribute.
+        """
 
         attributes = {}
 
@@ -86,13 +106,25 @@ class MuleXMLParser:
                 attribute_name.lower().replace("_", "-")
             )
 
+            # Mask sensitive attribute values.
             if any(
                 secret in normalized
                 for secret in self.SENSITIVE_ATTRIBUTES
             ):
                 value = "***REDACTED***"
 
-            attributes[attribute_name] = value
+            # Namespace-qualified attributes such as doc:name
+            # must not overwrite unqualified attributes.
+            if key.startswith("{"):
+
+                attributes.setdefault(
+                    attribute_name,
+                    value
+                )
+
+            else:
+
+                attributes[attribute_name] = value
 
         return attributes
 
