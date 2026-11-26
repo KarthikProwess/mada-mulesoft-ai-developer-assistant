@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core">
+
+    <flow name="employeeFlow">
+
+        <set-payload><![CDATA[
+%dw 2.0
+output application/json
+
+var employeeName = payload.name
+var employeeSalary = payload.salary
+
+---
+{
+    name: upper(employeeName),
+    salary: employeeSalary,
+    department: payload.department
+}
+        ]]></set-payload>
+
+    </flow>
+
+</mule>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="com.mada.studio.views.assistant"
+         name="MADA Assistant"
+         point="org.eclipse.ui.views">
+      <view
+            category="MADA"
+            class="com.mada.studio.views.MadaChatView"
+            id="com.mada.studio.views.assistant"
+            name="MADA Assistant"
+            restorable="true">
+      </view>
+   </extension>
+</plugin>

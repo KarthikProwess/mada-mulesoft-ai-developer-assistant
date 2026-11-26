@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:db="http://www.mulesoft.org/schema/mule/db"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+
+    <http:listener-config name="HTTP_Listener_config">
+        <http:listener-connection host="0.0.0.0" port="8081"/>
+    </http:listener-config>
+
+    <db:config name="Database_Config">
+        <db:generic-connection
+            url="${db.url}"
+            user="${db.user}"
+            password="${db.password}"/>
+    </db:config>
+
+    <flow name="getEmployeeFlow">
+
+        <http:listener
+            config-ref="HTTP_Listener_config"
+            path="/employees"/>
+
+        <logger message="Employee request received"/>
+
+        <flow-ref name="fetchEmployeeSubflow"/>
+
+        <ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[
+                    %dw 2.0
+                    output application/json
+                    ---
+                    payload
+                ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler>
+            <on-error-propagate type="ANY">
+                <logger message="Employee processing failed"/>
+            </on-error-propagate>
+        </error-handler>
+
+    </flow>
+
+    <sub-flow name="fetchEmployeeSubflow">
+
+        <db:select config-ref="Database_Config">
+            <db:sql>SELECT * FROM employees</db:sql>
+        </db:select>
+
+    </sub-flow>
+
+</mule>

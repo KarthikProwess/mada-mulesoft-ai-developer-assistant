@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core">
+
+    <flow name="employeeFlow">
+
+        <logger level="INFO" message="Processing employee"/>
+
+        <try>
+
+            <raise-error
+                type="APP:EMPLOYEE_ERROR"
+                description="Employee processing failed"/>
+
+            <error-handler>
+
+                <on-error-continue type="APP:EMPLOYEE_ERROR">
+                    <logger level="ERROR"
+                            message="Employee error handled"/>
+                    <set-payload value='{"status":"ERROR"}'/>
+                </on-error-continue>
+
+                <on-error-propagate type="ANY">
+                    <logger level="ERROR"
+                            message="Unexpected error"/>
+                </on-error-propagate>
+
+            </error-handler>
+
+        </try>
+
+    </flow>
+
+</mule>
